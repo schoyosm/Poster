@@ -16,7 +16,7 @@ head(datos)
 plot(datos[-c(6,7)])
 datos$Modo<-as.factor(datos$Modo)
 attach(datos)
-class(Configuraci?n)
+class(Configuración)
 par(mfrow=c(2,2))
 plot(CC~RV, lty = 3, pch = 1)
 lines(lowess(CC ~ RV),col='red', lty = 6, lwd = 2)
@@ -43,12 +43,18 @@ plot(m1, scale = "Cp", main = 'Cp')
 modr2 <- lm(CC ~ RV+DR+I(RV^2)+I(X.CH4^2)+I(RV^3)+RV*DR+RV*X.CO)
 modbic <- lm(CC ~ I(RV^2)+I(X.CH4^2)+RV*DR)
 modcp <- lm(CC~ RV+DR+I(RV^2)+I(X.CH4^2)+I(RV^3)+RV*DR)
-AIC(modr2,k=3)
-AIC(modbic,k=3)
-AIC(modcp,k=3)
-cor(CC, modr2$fitted.values)
-cor(CC, modbic$fitted.values)
-cor(CC, modcp$fitted.values)
+nb <- c("R2","BIC","Cp")
+ai1 <- AIC(modr2,k=3)
+ai2 <- AIC(modbic,k=3)
+ai3 <- AIC(modcp,k=3)
+va <- c(ai1,ai2,ai3)
+co1 <- cor(CC, modr2$fitted.values)
+co2 <-cor(CC, modbic$fitted.values)
+co3 <-cor(CC, modcp$fitted.values)
+vc <- c(co1,co2,co3)
+mat <- cbind(nb,va,vc)
+colnames(mat)<- c("Críterio","AIC","Correlación")
+xtable(mat)
 #MEJOR MODELO
 modrs <- lm(CC~ RV+DR+I(RV^2)+I(X.CH4^2)+I(RV^3)+RV*DR)
 #Con Indicadoras
@@ -72,10 +78,10 @@ cor(CC,modb$fitted.values)
 AIC(modb)
 extractAIC(modb)
 fullmod <- lm(CC~(RV+DR+X.CO+X.CH4)^2+I(RV^2)
-              +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo + Configuraci?n)
+              +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo + Configuración)
 summary(fullmod)
 fullmod2 <- lm(CC~(RV+DR+X.CH4)^2+I(RV^2)
-              +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo + Configuraci?n)
+              +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo + Configuración)
 
 #Modelo Backwards
 modback <- stepAIC(object = fullmod, direction = 'backward', k = 3)
@@ -84,7 +90,7 @@ AIC(modback)
   AIC(modback2)
 extractAIC(fit=modback, k=2)
 #Modelo Forward
-hori <- formula(CC~(RV+DR+X.CO+X.CH4+Modo+Configuraci?n)^2+I(RV^2)
+hori <- formula(CC~(RV+DR+X.CO+X.CH4+Modo+Configuración)^2+I(RV^2)
                 +I(DR^2)+I(X.CH4^2)+I(RV^3))
 empty.mod <- lm(CC ~ 1)
 modfor <- stepAIC(empty.mod, trace = FALSE, direction = 'forward',
@@ -124,28 +130,31 @@ fitt <- fitDist(CC, type = "realplus", k=3)
 fitt$fits
 #Step GAIC
 mod1 <- gamlss(CC~(RV+DR+X.CO+X.CH4)^2+I(RV^2)
-               +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuraci?n,
+               +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuración,
                family = "WEI3", trace = FALSE)
 summary(mod1)
 vif(modback)
 mod2 <- stepGAIC(mod1)
 mod3 <- stepGAIC(mod1, scope=list(lower=~1,
                                   upper=~(RV+DR+X.CO+X.CH4)^2+I(RV^2)
-                                  +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuraci?n,
+                                  +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuración,
                                   k=2))
 Rsq(mod3)
 x1 <- cbind(x,X.CO)
-omcdiag(x1,y)
-imcdiag(x1,y)
-
+od <- omcdiag(x1,y)
+id <-imcdiag(x1,y)
+tod <- od$odiags
+  tid <- id$idiags
+xtable(tod)
+xtable(tid)
 #STEPGAIC.ALL
 m1 <- gamlss(CC~1,family = "WEI3", trace=FALSE)
 summary(m1)
 m2<-stepGAICAll.A(m1, scope=list(lower=~1, upper=~(RV+DR+X.CO+X.CH4)^2+I(RV^2)
-                                 +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuraci?n),
+                                 +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuración),
                   k=3)
 m3 <- stepGAICAll.B(m1, scope=list(lower=~1, upper=~(RV+DR+X.CO+X.CH4)^2+I(RV^2)
-                                   +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuraci?n),
+                                   +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuración),
                     k=3)
 
 #COMPARANDO
@@ -158,10 +167,10 @@ Rsq(m2)
 m4 <- gamlss(CC~1,family = "GA", trace=FALSE)
 summary(m4)
 m5<-stepGAICAll.A(m4, scope=list(lower=~1, upper=~(RV+DR+X.CO+X.CH4)^2+I(RV^2)
-                                 +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuraci?n),
+                                 +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuración),
                   k=3)
 m6 <- stepGAICAll.B(m4, scope=list(lower=~1, upper=~(RV+DR+X.CO+X.CH4)^2+I(RV^2)
-                                   +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuraci?n),
+                                   +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuración),
                     k=3)
 summary(m5)
 AIC(m5, k=3)
@@ -169,10 +178,10 @@ Rsq(m5)
 #GAMA GENERALIZADA
 m7 <- gamlss(CC~1,family = "GG", trace=FALSE)
 m8<-stepGAICAll.A(m7, scope=list(lower=~1, upper=~(RV+DR+X.CO+X.CH4)^2+I(RV^2)
-                                 +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuraci?n),
+                                 +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuración),
                   k=3)
 m9 <- stepGAICAll.B(m7, scope=list(lower=~1, upper=~(RV+DR+X.CO+X.CH4)^2+I(RV^2)
-                                   +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuraci?n),
+                                   +I(DR^2)+I(X.CH4^2)+I(RV^3)+Modo+Configuración),
                     k=3)
 summary(m8)
 AIC(m8, k=3)
@@ -199,7 +208,7 @@ ML <- data.frame(enc,f1,f2,f3)
 names(ML) <- c("Criterio", "WEI3", "GA", "GG")
 ML
 xtable(ML)
-#ARBOLES DE REGRESI?N
+#ARBOLES DE REGRESIÓN
 modar1 <- rpart(CC~., data = datos, method = "anova")
 modar1
 rpart.plot(modar1, type = 3, digits = 4, fallen.leaves = TRUE)
@@ -279,3 +288,45 @@ max(cori)
 max(cori1)
 cor(CC,modl1$fitted)
 cor(CC,modl2$fitted)
+
+#MEJORES MODELOS
+
+modrsi <- lm(CC~ RV+DR+I(RV^2)+I(X.CH4^2)+I(RV^3)+RV*DR+Modo+Configuración)
+res1 <- modrsi$residuals
+res2 <- modfor$residuals
+res3 <- m8$residuals
+fit3 <- fitted(m8, what = "mu")
+
+par(mfrow=c(2,3))
+plot(modrsi, main="Leap", pch=19, cex=1, which = 1)
+plot(modfor, main="stepAIC", pch=19, cex=1, which = 1)
+plot(fit3, res3, main="stepGAIC.ALL", pch=19, cex=1)
+lines(lowess(res3 ~ fit3),col='red', lty = 6, lwd = 1)
+qqnorm(res1, main="Leap")
+qqline(res1, col = 'red')
+qqnorm(res2, main="stepAIC")
+qqline(res2, col = 'red')
+qqnorm(res3, main="stepGAIC.ALL")
+qqline(res3, col = 'red')
+s1 <- summary(modrsi)
+s2 <- summary(modfor)
+s3 <- summary(m8)
+
+aic1 <- AIC(modrsi, k=3)
+aic2 <- AIC(modfor, k=3)
+aic3 <- AIC(m8, k=3)
+vaic <- c(aic1,aic2,aic3)
+cor1 <- cor(CC,modrsi$fitted.values)
+cor2 <- cor(CC, modfor$fitted.values)
+cor3 <- cor(CC, fit3)
+vcor <- c(cor1,cor2,cor3)
+ECM1 <- mean((CC-modrsi$fitted.values)^2)
+ECM2 <- mean((CC-modfor$fitted.values)^2)
+ECM3 <- mean((CC-fit3)^2)
+vECM <- c(ECM1,ECM2,ECM3)
+vmod <- c("Leaps", "stepAIC", "stepGAIC")
+M <- cbind(vmod,vaic,vcor,vECM)
+colnames(M) <- c("Modelo","AIC", "Correlación", "ECM")
+M
+xtable(M, digits = 4)
+summary(modfor)
